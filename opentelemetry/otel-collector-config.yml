@@ -22,13 +22,13 @@ exporters:
     #   - example:tag
 
     api:
-      key: <YOUR_API_KEY>
+      key:  <YOUR_API_KEY>
   logging:
-    logLevel: info
+    logLevel: debug
 
 service:
   pipelines:
     traces:
       receivers: [otlp, zipkin, jaeger]
       processors: [batch]
-      exporters: [datadog/api]
+      exporters: [datadog/api, logging]

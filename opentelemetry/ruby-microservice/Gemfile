@@ -17,3 +17,7 @@ gem 'opentelemetry-api'
 gem 'opentelemetry-exporter-otlp'
 gem 'opentelemetry-exporter-jaeger'
 
+gem 'ddtrace'
+
+gem 'lightstep'
+gem 'opentracing'

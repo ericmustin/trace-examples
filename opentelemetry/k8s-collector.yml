@@ -179,7 +179,7 @@ spec:
         - name: FLUENT_DATADOG_HOST
           value: "http-intake.logs.datadoghq.com"
         - name: FLUENT_DATADOG_API_KEY
-          value: #"<YOUR_API_KEY>"
+          value: <YOUR_API_KEY> #"<YOUR_API_KEY>"
         volumeMounts:
         - name: varlog
           mountPath: /var/log
@@ -626,6 +626,8 @@ spec:
         # was having trouble with the otlp export but jaeger also exists in core by default
         - name: OTEL_EXPORTER_JAEGER_ENDPOINT
           value: "http://$(HOST_IP):14268/api/traces"
+        - name: OTEL_EXPORTER_DATADOG_ENDPOINT
+          value: "$(HOST_IP)"
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: deployment.environment=otel_sandbox,version=v1
         - name: OTEL_TRACES_EXPORTER

@@ -2,6 +2,7 @@
 // eslint-disable-next-line
 const otel = require('@opentelemetry/api');
 const winston = require('winston')
+const performance = require('perf_hooks').performance;
 const UINT_MAX = 4294967296
 
 // Convert a buffer to a numerical string.
@@ -93,6 +94,9 @@ const tracingFormat = function () {
       const traceIdEnd = context.traceId.slice(context.traceId.length / 2)
       info['dd.trace_id'] = toNumberString(fromString(traceIdEnd,16))
       info['dd.span_id'] = toNumberString(fromString(context.spanId,16))
+      info['span_start_time'] = span.startTime.toString()
+      info['time_origin'] = performance.timeOrigin.toString()
+      info['now'] = performance.now().toString()
     }
     return info;
   })();

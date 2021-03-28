@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'opentelemetry/sdk'
+# require 'opentelemetry/sdk'
 require 'sinatra'
 require 'sinatra/contrib'
 require 'sinatra/custom_logger'
@@ -9,6 +9,7 @@ require 'spacex'
 require 'redis-sinatra'
 require 'json'
 require 'yaml'
+require 'opentracing'
 
 class Multivac < Sinatra::Base
   helpers Sinatra::CustomLogger
@@ -22,22 +23,32 @@ class Multivac < Sinatra::Base
     logger.progname = 'multivac'
     original_formatter = Logger::Formatter.new
     logger.formatter  = proc do |severity, datetime, progname, msg|
-      current_span = OpenTelemetry::Trace.current_span(OpenTelemetry::Context.current).context
+      ## START OPENTRACING LOGS #
+      "#{{datetime: datetime, progname: progname, severity: severity, msg: msg}.to_json}\n"
+      ## END OPENTRACING LOGS #
+
+
+      ## START LOG TRACE ID INJECTION OPENTELEMETRY #
+      # current_span = OpenTelemetry::Trace.current_span(OpenTelemetry::Context.current).context
       
-      dd_trace_id = current_span.trace_id.unpack1('H*')[16, 16].to_i(16).to_s
-      dd_span_id = current_span.span_id.unpack1('H*').to_i(16).to_s
+      # dd_trace_id = current_span.trace_id.unpack1('H*')[16, 16].to_i(16).to_s
+      # dd_span_id = current_span.span_id.unpack1('H*').to_i(16).to_s
       
-      if current_span
-        "#{{datetime: datetime, progname: progname, severity: severity, msg: msg, 'dd.trace_id': dd_trace_id, 'dd.span_id': dd_span_id}.to_json}\n"
-      else
-        "#{{datetime: datetime, progname: progname, severity: severity, msg: msg}.to_json}\n"
-      end
+      # if current_span
+      #   "#{{datetime: datetime, progname: progname, severity: severity, msg: msg, 'dd.trace_id': dd_trace_id, 'dd.span_id': dd_span_id}.to_json}\n"
+      # else
+      #   "#{{datetime: datetime, progname: progname, severity: severity, msg: msg}.to_json}\n"
+      # end
+
+      ## END TRACE ID INJECTION OPENTELEMETRY #
     end
 
     set :logger, logger
   end
 
   get '/' do
+    span = OpenTracing.start_span('request_c')
+    span.finish
     'Hello World!'
   end
 
@@ -47,6 +58,7 @@ class Multivac < Sinatra::Base
 
   get '/next_launch' do
     begin
+      span = OpenTracing.start_span('request_a')
       logger.info('checking next_launch')
       cached_next_launch = settings.cache.read('next_launch')
 
@@ -64,6 +76,7 @@ class Multivac < Sinatra::Base
         'next_launch_date' => next_launch['launch_date_utc']
       }.to_json)
 
+      span.finish
       erb :next_launch, locals: {
         name: next_launch['mission_name'],
         date: next_launch['launch_date_utc'],
@@ -78,6 +91,7 @@ class Multivac < Sinatra::Base
 
   get '/location_info' do
     begin
+      span = OpenTracing.start_span('request_b')
       logger.info('checking location_info')
 
       cached_location_info = settings.cache.read('location_info')
@@ -96,7 +110,7 @@ class Multivac < Sinatra::Base
         'roadster_distance_earth' => location_info['earth_distance_mi'],
         'roadster_distance_mars' => location_info['mars_distance_mi']
       )
-
+      span.finish
       content_type :json
       location_info.to_json
     rescue StandardError => e

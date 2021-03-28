@@ -4,9 +4,10 @@ RUN gem install bundler
 ENV BUNDLE_PATH "/bundle"
 
 RUN mkdir -p /sinatra-multivac
-WORKDIR /sinatra-multivac
 
 COPY . /sinatra-multivac
+
+WORKDIR /sinatra-multivac
 
 RUN bundle install --no-cache
 
