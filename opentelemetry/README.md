@@ -4,16 +4,6 @@ This Repository allows users to deploy a sandbox distributed tracing application
 
 To learn more about OpenTelemetry, please review the [Datadog Documentation](https://docs.datadoghq.com/tracing/setup_overview/open_standards/#opentelemetry-collector-datadog-exporter)
 
-### Docker-Compose
-
-This test environment is useful for testing Docker-specific behavior of the exporter.
-It defines a standalone collector setup within a docker network, and generates traffic at a rate of 1 request per second for 15 minutes.
-
-1. Replace <YOUR_API_KEY> with your API key in `otel-collector-config.yml`
-  - If you also wish to enable log collection, Replace <YOUR_API_KEY> with your API key in `fluent-bit/fluent-bit.conf`
-2. `$ docker-compose build`
-3. `$ docker-compose up`
-
 ### Kubernetes
 
 This test environment is useful for testing Kubernetes-specific behavior of the exporter.
@@ -23,10 +13,13 @@ To use it you need to [install `minikube`](https://minikube.sigs.k8s.io/docs/sta
 
 1. Replace <YOUR_API_KEY> with your API key in `k8s-collector.yml` manifest.
   - If you also wish to enable log collection, Replace <YOUR_API_KEY> with your API key in the `value` of the `FLUENT_DATADOG_API_KEY` env var within the `fluent-bit` `DaemonSet`.
-2. `$ sh ./build.sh`
-3. `$ sh ./run.sh start`
+  - If you also wish to enable export to the datadog-agent, Replace <YOUR_API_KEY> with your API key in the `values.yaml` file.
+2. Following [the documentation here](https://docs.datadoghq.com/agent/kubernetes/apm/?tab=helm#pagetitle), deploy the datadog-agent with the following `helm` command, replacing `<YOUR_API_KEY>` with your api key:
+	- `helm install datadog-agent -f values.yaml  --set datadog.apiKey=<YOUR_API_KEY> datadog/datadog --set targetSystem=linux`
+3. `$ sh ./build.sh`
+4. `$ sh ./run.sh start`
 
-To make individual requests to the sandbox:
+Some sample requests should be generated automatically. To make individual requests to the sandbox:
 
 1. After starting the cluster, create a tunnell to the `python-microservice` service:
   
